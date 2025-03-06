@@ -6,15 +6,15 @@ import hashlib
 import os
 import webbrowser
 import sys
+import string
+import random
 
 # Required configuration
-application_token = "c5uRAQMm9op74yeUCB" # Your application token goes here
-application_secret = "t91bTr2NleH4Ahu8IU" # Your application secret goes here
+application_token = "" # Your application token goes here
+application_secret = "" # Your application secret goes here
 application_version = "1.0" # Your application version goes here
 
 # Advanced configuration
-invalid_account_key_message = "Invalid account key!"
-invalid_application_key_message = "Invalid application key!"
 invalid_request_message = "Invalid request!"
 outdated_version_message = "Outdated version, please upgrade!"
 busy_sessions_message = "Please try again later!"
@@ -52,6 +52,11 @@ def compute_sha512(input_string):
 def generate_Eauth_header(message, app_secret):
     auth_token = app_secret + message
     return compute_sha512(auth_token)
+
+characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
+
+def generate_random_string(length=18):
+    return ''.join(random.choices(characters, k=length))
 
 # Send post request to Eauth
 def run_request(request_data):
@@ -97,7 +102,8 @@ def init_request():
         'type': 'init',
         'token': application_token,
         'hwid': user_hwid,
-        'version': application_version
+        'version': application_version,
+        'pair': generate_random_string()
     }
 
     json_string = run_request(json.dumps(data))
@@ -138,6 +144,7 @@ def login_request(username, password):
         'username': username,
         'password': password,
         'hwid': user_hwid,
+        'pair': generate_random_string()
     }
 
     json_string = run_request(json.dumps(data))
@@ -186,6 +193,7 @@ def register_request(username, password, key):
         'password': password,
         'key': key,
         'hwid': user_hwid,
+        'pair': generate_random_string()
     }
 
     json_string = run_request(json.dumps(data))
