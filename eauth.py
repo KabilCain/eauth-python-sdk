@@ -12,7 +12,7 @@ import random
 # Required configuration
 application_token = "" # Your application token goes here
 application_secret = "" # Your application secret goes here
-application_version = "1.0" # Your application version goes here
+application_version = "" # Your application version goes here
 
 # Advanced configuration
 invalid_request_message = "Invalid request!"
