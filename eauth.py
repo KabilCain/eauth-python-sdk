@@ -125,7 +125,7 @@ def init_request():
         raise_error(busy_sessions_message)
     elif (message == 'user_is_banned'):
         raise_error(banned_user_message)
-    elif (message == 'app_paused'):
+    elif (message == 'init_paused'):
         raise_error(data['paused_message'])
 
     # Return
