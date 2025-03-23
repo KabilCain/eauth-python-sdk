@@ -254,6 +254,6 @@ def hardware_reset_request(username):
         raise_error(invalid_user_hwid_message)
     elif (message == 'cooldown_not_reached'):
         response = cooldown_hwid_message + " @ " + data['estimated_reset_time']
-        raise_error(cooldown_hwid_message)
+        raise_error(response)
 
     return False
