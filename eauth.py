@@ -10,9 +10,9 @@ import string
 import random
 
 # Required configuration
-application_token = "" # Your application token goes here
-application_secret = "" # Your application secret goes here
-application_version = "" # Your application version goes here
+application_token = "application_token_here" # Your application token goes here
+application_secret = "application_secret_here" # Your application secret goes here
+application_version = "application_version_here" # Your application version goes here
 
 # Advanced configuration
 invalid_request_message = "Invalid request!"
@@ -29,6 +29,8 @@ expired_user_message = "Your subscription has ended. Please renew to continue us
 used_name_message = "Username already taken. Please choose a different username!"
 invalid_key_message = "Invalid key. Please enter a valid key!"
 upgrade_your_eauth_message = "Upgrade your Eauth plan to exceed the limits!"
+cooldown_hwid_message = "You have not yet reached your reset cool down, please try again later."
+invalid_user_hwid_message = "The user either has a null HWID or is unavailable."
 
 # Dynamic configuration
 init = False
@@ -225,3 +227,33 @@ def register_request(username, password, key):
         raise_error(upgrade_your_eauth_message)
 
     return register
+    
+# Eauth reset HWID request
+def hardware_reset_request(username):
+    data = {
+        'type': 'hardware_reset',
+        'session_id': session_id,
+        'username': username,
+        'pair': generate_random_string()
+    }
+
+    json_string = run_request(json.dumps(data))
+    data = json.loads(json_string)
+    message = data['message']
+
+    # Check response
+    if (message == 'reset_success'):
+        return True
+    elif (message == 'invalid_request'):
+        raise_error(invalid_request_message)
+    elif (message == 'session_unavailable'):
+        raise_error(unavailable_session_message)
+    elif (message == 'session_expired'):
+        raise_error(expired_session_message)
+    elif (message == 'invalid_user'):
+        raise_error(invalid_user_hwid_message)
+    elif (message == 'cooldown_not_reached'):
+        response = cooldown_hwid_message + " @ " + data['estimated_reset_time']
+        raise_error(cooldown_hwid_message)
+
+    return False

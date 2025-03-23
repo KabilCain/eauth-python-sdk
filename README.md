@@ -15,6 +15,9 @@ def login_request(username, password)
 ```python
 def register_request(username, password, key)
 ```
+```python
+def hardware_reset_request(username)
+```
 
 Configuration
 -------------
