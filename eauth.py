@@ -257,3 +257,21 @@ def hardware_reset_request(username):
         raise_error(response)
 
     return False
+
+# Check the user authentication
+def auth_monitor():
+    data = {
+        'type': 'auth_monitor',
+        'session_id': session_id,
+        'pair': generate_random_string()
+    }
+
+    json_string = run_request(json.dumps(data))
+    data = json.loads(json_string)
+    message = data['message']
+
+    # Check response
+    if (message == 'up'):
+        return True
+
+    return False
