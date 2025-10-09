@@ -62,8 +62,9 @@ def generate_random_string(length=18):
 
 # Send post request to Eauth
 def run_request(request_data):
+    signature = generate_Eauth_header(request_data, application_secret)
     response = requests.post('https://eauth.us.to/api/1.2/',
-                             headers={"Content-Type": "application/json", "User-Agent": generate_Eauth_header(request_data, application_secret)},
+                             headers={"Content-Type": "application/json", "User-Agent": signature},
                              data=request_data)
     
     res = json.loads(response.text)
@@ -73,6 +74,9 @@ def run_request(request_data):
     Eauth_header = response.headers.get('Eauth')
     if (message != 'invalid_request' and message != 'session_unavailable' and message != 'session_already_used' and message != 'invalid_email'):
         if (Eauth_header != generate_Eauth_header(response.text, application_secret)):
+            sys.exit(1)
+
+        if (res['pair'] != signature):
             sys.exit(1)
    
     return response.text
