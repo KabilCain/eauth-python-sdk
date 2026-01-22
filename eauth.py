@@ -8,6 +8,9 @@ import webbrowser
 import sys
 import string
 import random
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+import base64
 
 # Required configuration
 application_token = "application_token_here" # Your application token goes here
@@ -59,6 +62,23 @@ characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
 
 def generate_random_string(length=18):
     return ''.join(random.choices(characters, k=length))
+    
+PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAn2rh1JxHmjlu2UhR80g1
+issihSD2Xuf5Pevlu0ZfRqFkgfdSxCyDwguNo9oTSG+wArktK7QJ0Xao+dsgg1vB
+c7/mF/S+cdiCl8Gg8RTDvHZObqnoPQy8KgaqzilT5KMLp/1r5meky1bRmhFn3F17
+Zkt3VQvM6T+99AMA6l/nDc0U8Xc1UvX9WrnR4UoBYWtO19/UaP/Z0zsFiSlu9iXP
+QotGlL14gQvyByXE2icMR198/dj+wLV9Kirb17KuJtxQo9IHbVAPX3YZ72NPkDR0
+hlATbgwXoLsvy1Jp3LLSV/kUWkWgQgcHp2WXNycpgVJDmfmna+mq0nhDSdCRoBl9
+slU1xvBZTya/IAt5SqfazM/b0xM/uleXISx+oHjRIRM8Se26OByUl6Rtjkg/uSxj
+Jk5ljAR0WjmC4fHD7fLEVbKG8SdQxHN5fb565hh8LlwG1ER6SaxmpmK2N5JC+FLQ
+ihCJVDllLU5AwppZbv4PKUMprjNxZO41cKCcNUBxTX442k8HcXDqoRM2icjb4X35
+SGie3lIw+WvEOr5Hr0vhoQnAwree2BnqMVZIjH34L5vObeToeTnUwXKJ9o7fGRhI
+9P00gyzsFHQgiMKOygioj9NdobtPIPahcStagR9PQLR117Fhyx2R9RSZESZB4pIY
+FtlOd7spqVctsJWnfVo9ai0CAwEAAQ==
+-----END PUBLIC KEY-----"""
+
+public_key = serialization.load_pem_public_key(PUBLIC_KEY_PEM.encode())
 
 # Send post request to Eauth
 def run_request(request_data):
@@ -71,9 +91,11 @@ def run_request(request_data):
     message = res['message']
 
     # Read signature
-    Eauth_header = response.headers.get('Eauth')
     if (message != 'invalid_request' and message != 'session_unavailable' and message != 'session_already_used' and message != 'invalid_email'):
-        if (Eauth_header != generate_Eauth_header(message + response.text, application_secret)):
+        Eauth_header = base64.b64decode(response.headers.get('Signature'))
+        try:
+            public_key.verify(Eauth_header, generate_Eauth_header(message + response.text, application_secret).encode('utf-8'), padding.PKCS1v15(),hashes.SHA256())
+        except:
             sys.exit(1)
 
         if (res['pair'] != signature):
